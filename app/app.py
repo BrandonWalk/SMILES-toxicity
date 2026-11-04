@@ -95,12 +95,7 @@ if st.button("Submit", type="primary", disabled=not valid) and valid:
     with right:
         st.metric("P(hERG blocker)", f"{probability:.1%}")
         st.progress(probability)
-        if toxic:
-            st.error(f"**Predicted toxic** — probability {probability:.3f} is at or above the "
-                     f"{THRESHOLD:.2f} decision threshold.")
-        else:
-            st.success(f"**Predicted non-toxic** — probability {probability:.3f} is below the "
-                       f"{THRESHOLD:.2f} decision threshold.")
+        st.metric("Prediction", "Toxic" if toxic else "Non-toxic")
 
     if len(Chem.GetMolFrags(mol)) > 1:
         st.info("The input contains more than one fragment (e.g. a salt). "
