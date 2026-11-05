@@ -2,6 +2,11 @@
 
 App Link: https://brandonwalk-smiles-toxicity-appapp-vmdjxi.streamlit.app
 
+Anisha Jaiswal  
+Pei Yu Hsueh
+Srish Maulik
+Brandon Walker
+
 ## Decision Threshold
 
 The decision threshold was set to 0.45. This was done for two reasons:
