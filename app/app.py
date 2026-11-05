@@ -63,10 +63,27 @@ def load_session():
     return session, inp.name, dtype
 
 
+@st.cache_resource(show_spinner=False, max_entries=256)
+def parse(smiles):
+    """Parse once and keep the largest fragment; cached so reruns don't re-parse."""
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None or mol.GetNumAtoms() == 0:
+        return None, None
+    return mol, largest_fragment(mol)
+
+
+@st.cache_data(show_spinner=False, max_entries=256)
+def feature_row(smiles):
+    """Cached (FP_SIZE + N_DESCRIPTORS,) feature vector for one molecule."""
+    row = featurize([smiles])[0]
+    row.setflags(write=False)   # cached array is shared; keep it read-only
+    return row
+
+
 def predict_probability(smiles):
     """P(hERG blocker) for one SMILES string, read from the model's last output."""
     session, input_name, dtype = load_session()
-    features = featurize([smiles]).astype(dtype)
+    features = feature_row(smiles)[None, :].astype(dtype)
     output = np.asarray(session.run(None, {input_name: features})[-1], float)
     probability = output[:, 1] if output.ndim == 2 and output.shape[1] == 2 else output.ravel()
     return float(np.clip(probability[0], 0.0, 1.0))
@@ -79,8 +96,8 @@ st.caption("Predicts the probability that a molecule is a hERG channel blocker "
            "(a common cause of cardiotoxicity) using an ExtraTrees model exported to ONNX.")
 
 smiles = st.text_input("Input SMILES string:", placeholder="e.g. CC(=O)Oc1ccccc1C(=O)O")
-mol = Chem.MolFromSmiles(smiles) if smiles else None
-valid = mol is not None and mol.GetNumAtoms() > 0
+mol, mol_lf = parse(smiles) if smiles else (None, None)
+valid = mol is not None
 
 if smiles and not valid:
     st.error("The SMILES string is not valid.")
@@ -91,11 +108,17 @@ if st.button("Submit", type="primary", disabled=not valid) and valid:
 
     left, right = st.columns([1, 1])
     with left:
-        st.image(Draw.MolToImage(largest_fragment(mol), size=(300, 300)), caption=smiles)
+        st.image(Draw.MolToImage(mol_lf, size=(300, 300)), caption=smiles)
     with right:
         st.metric("P(hERG blocker)", f"{probability:.1%}")
         st.progress(probability)
         st.metric("Prediction", "Toxic" if toxic else "Non-toxic")
+
+    statement = ("This molecule is predicted **TOXIC** — a likely hERG blocker "
+                 f"(P = {probability:.1%} ≥ {THRESHOLD:.0%} threshold)." if toxic else
+                 "This molecule is predicted **NOT TOXIC** — unlikely to be a hERG blocker "
+                 f"(P = {probability:.1%} < {THRESHOLD:.0%} threshold).")
+    (st.error if toxic else st.success)(statement)
 
     if len(Chem.GetMolFrags(mol)) > 1:
         st.info("The input contains more than one fragment (e.g. a salt). "
@@ -106,6 +129,6 @@ if st.button("Submit", type="primary", disabled=not valid) and valid:
                  "H-bond donors", "H-bond acceptors", "Rotatable bonds", "Rings", "Aromatic rings",
                  "Fraction sp3 C", "Heteroatoms", "Basic amines", "Cations", "Acids",
                  "Halogens", "Formal charge"]
-        values = descriptors(largest_fragment(mol))
+        values = descriptors(mol_lf)
         st.table({"Descriptor": names,
                   "Value": [f"{v:.3f}" if isinstance(v, float) else str(v) for v in values]})

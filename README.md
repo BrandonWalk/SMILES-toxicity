@@ -2,9 +2,9 @@
 
 ## Decision Threshold
 
-The decision threshold was set to 0.44. This was done for two reasons:
+The decision threshold was set to 0.45. This was done for two reasons:
 1. We decided to go after recall as a metric to optimize, hoping that our team would have this as a unique target. When the threshold is lowered the recall gets higher at the cost of specificity. This would be fine in the real world as more things are identified as toxic and thus need to be tested further.
-2. The specific value of 0.44 was done after re-training the model multiple times under different random seeds for the train test split until we could ensure that 10/10 random seed starts would give us a specificity >0.7.
+2. The specific value of 0.45 was done after re-training the model multiple times under different random seeds for the train test split until we could ensure that 10/10 random seed starts would give us a specificity >0.7.
 
 ## Feature Engineering
 
@@ -15,3 +15,7 @@ We had tried two methods for generating numeric data.
 ## Model Selection and Hyperparameters
 
 A tree based model is a good model to move forward with once you have done fingerprints. Interaction effects between any two variables in a fingerprint is basically impossible to intuit because there is nothing meaningful about the fingerprint. With the fingerprint essentially being binary a model like logisitic regression is also not useful. We did optimize the number of trees in the random forest, diminshing them did not have a large impact from our starting point of 300 trees. The speed can get quite fast with <50 trees but metrics did suffer at that point.
+
+## AI Usage
+
+Early version of the doc2vec and streamlit app were AI free, but other team members did use AI for the creation of their model. Integration of someone else's model was difficult so Claude Code was used to ensure that the model worked as intended in the streamlit app. Optimization of the hyperpatemers (trees, threshold, FP size) was done without AI and just repeated many times locally with different random seeds for the train test split. I also prompted Claude for ways to cache the featurizer and/or model within the app to make it more responsive, whether or not that is where speed is tested from it does improve the perofrmance of the app. While the instructions does say to not have many non-essential elements I did ask Claude to add the visuals at the bottom in case this does get put on my resume, I'd like it to look nice.
