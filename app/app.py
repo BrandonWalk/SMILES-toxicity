@@ -14,10 +14,10 @@ from rdkit.Chem import Crippen, Descriptors, Draw, Lipinski, rdFingerprintGenera
 RDLogger.DisableLog("rdApp.*")
 
 MODEL_PATH = Path(__file__).parent / "model.onnx"
-THRESHOLD = 0.40          # same decision threshold as the training script
+THRESHOLD = 0.45          # same decision threshold as the training script
 
 # ---- featurization (copied from the Part1 training script) -------------------------------
-FP_SIZE = 2048
+FP_SIZE = 1024
 N_DESCRIPTORS = 17
 MORGAN = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=FP_SIZE)
 BASIC_AMINE = Chem.MolFromSmarts("[NX3;H2,H1,H0;!$(NC=[O,S,N]);!$(N-a);!$(N-[SX4]);!$(NC#N)]")
