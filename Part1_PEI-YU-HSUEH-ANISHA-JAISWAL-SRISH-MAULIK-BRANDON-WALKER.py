@@ -13,10 +13,10 @@ RDLogger.DisableLog("rdApp.*")   # silence RDKit parse warnings for invalid SMIL
 
 NAME = "PEI-YU-HSUEH-ANISHA-JAISWAL-SRISH-MAULIK-BRANDON-WALKER"
 
-THRESHOLD = 0.38
+THRESHOLD = 0.45
 
 SEED = 2
-FP_SIZE = 2048
+FP_SIZE = 1024
 MORGAN = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=FP_SIZE)
 
 # Basic (protonatable) amines are the classic hERG pharmacophore; exclude amides, anilines,
